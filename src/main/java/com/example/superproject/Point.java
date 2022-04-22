@@ -29,6 +29,9 @@ public class Point {
         circle.setCenterX(new_pos.getX());
         circle.setCenterY(new_pos.getY());
     }
+    Point2D getPos(){
+        return new Point2D(circle.getCenterX(),circle.getCenterY());
+    }
     void constr(){
         if(new_pos.getY() > 600){
             new_pos = new Point2D(new_pos.getX(), 600);

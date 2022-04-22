@@ -6,9 +6,10 @@ public class Link {
     double restDistance = 100;
     Circle one;
     Circle two;
-    Link(Circle one, Circle two){
+    Link(Circle one, Circle two, double restDistance){
         this.one = one;
         this.two = two;
+        this.restDistance = restDistance;
     }
     void solve(){
 

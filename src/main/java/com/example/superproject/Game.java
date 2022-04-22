@@ -18,7 +18,7 @@ public class Game {
     public void initObjects(){
         addBlock(
                 new Point2D(0,0),
-                new Point2D(10,0),
+                new Point2D(100,0),
                 new Point2D(100,100),
                 new Point2D(0,100)
         );
@@ -33,7 +33,7 @@ public class Game {
             @Override
             public void handle(long currentNanoTime) {
                 for(int j =0 ;j < 2;j++) {
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i < 10; i++) {
                         for(Link link : linkList){
                             link.solve();
                         }
@@ -57,16 +57,23 @@ public class Game {
         Point threePoint = new Point(new Circle(three.getX(),three.getY(),4));
         Point fourPoint = new Point(new Circle(four.getX(),four.getY(),4));
 
+        onePoint.old_pos = new Point2D(-1,0);
+
+        double weight = onePoint.getPos().subtract(twoPoint.getPos()).magnitude();
+        double height = twoPoint.getPos().subtract(threePoint.getPos()).magnitude();
+        double diag_value = onePoint.getPos().subtract(threePoint.getPos()).magnitude();
+
         pointList.add(onePoint);
         pointList.add(twoPoint);
         pointList.add(threePoint);
         pointList.add(fourPoint);
 
-        Link up = new Link(onePoint.circle,twoPoint.circle);
-        Link right = new Link(twoPoint.circle, threePoint.circle);
-        Link down = new Link(threePoint.circle,fourPoint.circle);
-        Link left = new Link(fourPoint.circle, onePoint.circle);
-        Link diagOne = new Link(onePoint.circle,threePoint.circle);
+        Link up = new Link(onePoint.circle,twoPoint.circle,weight);
+        Link right = new Link(twoPoint.circle, threePoint.circle,height);
+        Link down = new Link(threePoint.circle,fourPoint.circle,weight);
+        Link left = new Link(fourPoint.circle, onePoint.circle,height);
+        Link diagLeft = new Link(twoPoint.circle,fourPoint.circle,diag_value);
+        Link diagRight = new Link(onePoint.circle,threePoint.circle,diag_value);
 
 
         blocklist.add(new Block(onePoint,twoPoint,threePoint,fourPoint));
@@ -74,7 +81,8 @@ public class Game {
         linkList.add(right);
         linkList.add(down);
         linkList.add(left);
-        linkList.add(diagOne);
+        linkList.add(diagLeft);
+        linkList.add(diagRight);
     }
 
 }
