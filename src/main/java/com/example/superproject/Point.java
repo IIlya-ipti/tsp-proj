@@ -53,11 +53,11 @@ public class Point {
         return new Point2D(circle.getCenterX(),circle.getCenterY());
     }
     void constr(){
-        if(new_pos.getY() > 600){
-            new_pos = new Point2D(new_pos.getX(), 600);
+        if(new_pos.getY() > 700){
+            new_pos = new Point2D(new_pos.getX(), 700);
         }
-        if(new_pos.getX() > 600){
-            new_pos = new Point2D(600, new_pos.getY());
+        if(new_pos.getX() > 700){
+            new_pos = new Point2D(700, new_pos.getY());
         }
         if(new_pos.getX() < 0){
             new_pos = new Point2D(0, new_pos.getY());

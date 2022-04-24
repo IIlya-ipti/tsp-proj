@@ -2,10 +2,12 @@ package com.example.superproject;
 
 import javafx.scene.shape.Circle;
 
+import static java.lang.Double.NaN;
+
 public class Link {
-    double restDistance ;
-    Circle one;
-    Circle two;
+    private final double restDistance;
+    private final Circle one;
+    private final Circle two;
     Link(Circle one, Circle two, double restDistance){
         this.one = one;
         this.two = two;
@@ -19,6 +21,9 @@ public class Link {
         double d = Math.sqrt(diffX* diffX + diffY * diffY);
         double difference = (restDistance - d)/d;
 
+        if(Double.isNaN(difference)){
+            difference = 0;
+        }
         double translateX = diffX* 0.5 * difference;
         double translateY = diffY* 0.5 * difference;
 

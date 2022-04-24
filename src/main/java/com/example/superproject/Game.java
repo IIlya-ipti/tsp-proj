@@ -33,44 +33,54 @@ public class Game {
     final private List<Shape> shapes = new ArrayList<>();
     private final Group group = new Group();
     boolean DEBUG = false;
-    boolean mouse = false;
+    boolean mouse = true;
 
     final double SCENE_X = 800;
     final double SCENE_Y = 700;
 
 
     public void initObjects(){
-        addBlock(
-                new Point2D(150,200),
-                new Point2D(200,200),
-                new Point2D(200,400),
-                new Point2D(150,400),
+        Block leftneg = addBlock(
+                new Point2D(150,100),
+                new Point2D(200,100),
+                new Point2D(200,300),
+                new Point2D(150,300),
                 50
         );
 
-        addBlock(
-                new Point2D(120,0),
-                new Point2D(420,0),
-                new Point2D(420,100),
-                new Point2D(120,100),
+        Block body = addBlock(
+                new Point2D(150,0),
+                new Point2D(450,0),
+                new Point2D(450,100),
+                new Point2D(150,100),
                 50
         );
-        addBlock(
-                new Point2D(220,0),
-                new Point2D(270,0),
-                new Point2D(270,200),
-                new Point2D(220,200),
+        Block rightleg = addBlock(
+                new Point2D(400,100),
+                new Point2D(450,100),
+                new Point2D(450,300),
+                new Point2D(400,300),
                 50
        );
 
 
 
+        linkList.add(new Link(
+                blocklist.get(0).getPointList().get(0).circle,
+                blocklist.get(1).getPointList().get(3).circle,
+                0
+        ));
+        linkList.add(new Link(
+                blocklist.get(1).getPointList().get(2).circle,
+                blocklist.get(2).getPointList().get(1).circle,
+                0
+        ));
+        //linkList.add(new Link(blocklist.get(0).getPointList().get(0).circle,
+        //blocklist.get(1).getPointList().get(3).circle,0));
 
 
-        linkList.add(new Link(blocklist.get(0).getPointList().get(2).circle,
-        blocklist.get(1).getPointList().get(3).circle,0));
-        linkList.add(new Link(blocklist.get(1).getPointList().get(2).circle,
-                blocklist.get(2).getPointList().get(1).circle,0));
+        //linkList.add(new Link(blocklist.get(1).getPointList().get(2).circle,
+        //        blocklist.get(2).getPointList().get(0).circle,0));
 
 
 
@@ -97,26 +107,13 @@ public class Game {
                     blocklist.get(1).getPointList().get(0).circle.setCenterY(MouseY);
                 }
                 if(!DEBUG) {
+
                     for (int j = 0; j < 2; j++) {
                         for (int i = 0; i < 10; i++) {
                             for (Link link : linkList) {
                                 link.solve();
                             }
                         }
-                        for(int k1 = 0 ; k1 < blocklist.size();k1++){
-                            for (int k2 = 0;k2 < blocklist.size();k2++){
-                                if(k1 == k2)continue;
-                                manifold.setBlocks(blocklist.get(k1),blocklist.get(k2));
-                                manifold.solveCollision();
-                                //manifold.applyImpulse();
-                                if(manifold.displacement>0){
-                                    System.out.println("F");
-                                    //manifold.posCorr();
-                                }
-                                System.out.println(manifold.displacement);
-                            }
-                        }
-
                         for (Point point : pointList) {
                             point.run(t / 2);
                         }
@@ -124,6 +121,7 @@ public class Game {
                             block.update();
                         }
                     }
+
                 }
             }
         }.start();
@@ -197,7 +195,6 @@ public class Game {
         Link down = new Link(threePoint.circle,fourPoint.circle,weight);
         Link left = new Link(fourPoint.circle, onePoint.circle,height);
         Link diagLeft = new Link(twoPoint.circle,fourPoint.circle,diag_value);
-        Link diagRight = new Link(onePoint.circle,threePoint.circle,diag_value);
 
         Block newBlock = new Block(onePoint,twoPoint,threePoint,fourPoint,mass);
 
@@ -207,7 +204,6 @@ public class Game {
         linkList.add(down);
         linkList.add(left);
         linkList.add(diagLeft);
-        linkList.add(diagRight);
 
         group.getChildren().add(newBlock.getPolygon());
 

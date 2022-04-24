@@ -21,7 +21,6 @@ public class PhysicModel {
 
 
 
-
     /*
      * apply the previously calculated momentum to the body
      * */
