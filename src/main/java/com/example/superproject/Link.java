@@ -3,7 +3,7 @@ package com.example.superproject;
 import javafx.scene.shape.Circle;
 
 public class Link {
-    double restDistance = 100;
+    double restDistance ;
     Circle one;
     Circle two;
     Link(Circle one, Circle two, double restDistance){
