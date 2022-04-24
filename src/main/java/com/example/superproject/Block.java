@@ -72,6 +72,17 @@ public class Block {
             point.circle.setCenterY(point.circle.getCenterY() + vec.getY());
         }
     }
+    void setGravity(boolean gravity){
+        if(gravity){
+            for (Point point:pointList){
+                point.acc = new Point2D(0,PhysicModel.g);
+            }
+        }else{
+            for (Point point:pointList){
+                point.acc = new Point2D(0,0);
+            }
+        }
+    }
     boolean hasPoint(Point point){
         for (Point point1 : pointList){
             if(point == point1){

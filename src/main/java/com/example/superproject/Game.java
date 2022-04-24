@@ -35,55 +35,50 @@ public class Game {
     boolean DEBUG = false;
     boolean mouse = true;
 
-    final double SCENE_X = 800;
-    final double SCENE_Y = 700;
+    static final double SCENE_X = 800;
+    static final double SCENE_Y = 700;
 
 
     public void initObjects(){
         Block leftneg = addBlock(
                 new Point2D(150,100),
-                new Point2D(200,100),
-                new Point2D(200,300),
-                new Point2D(150,300),
+                50,
+                200,
                 50
         );
 
         Block body = addBlock(
                 new Point2D(150,0),
-                new Point2D(450,0),
-                new Point2D(450,100),
-                new Point2D(150,100),
+                300,
+                100,
                 50
         );
         Block rightleg = addBlock(
                 new Point2D(400,100),
-                new Point2D(450,100),
-                new Point2D(450,300),
-                new Point2D(400,300),
+                50,
+                200,
                 50
        );
 
+        //Block platform = addBlock(
+        //        new Point2D(0,600),
+        //        1000,
+        //        100,
+        //        0
+        //);
 
 
+        //platform.setGravity(false);
         linkList.add(new Link(
-                blocklist.get(0).getPointList().get(0).circle,
-                blocklist.get(1).getPointList().get(3).circle,
+                leftneg.getPointList().get(0).circle,
+                body.getPointList().get(3).circle,
                 0
         ));
         linkList.add(new Link(
-                blocklist.get(1).getPointList().get(2).circle,
-                blocklist.get(2).getPointList().get(1).circle,
+                body.getPointList().get(2).circle,
+                rightleg.getPointList().get(1).circle,
                 0
         ));
-        //linkList.add(new Link(blocklist.get(0).getPointList().get(0).circle,
-        //blocklist.get(1).getPointList().get(3).circle,0));
-
-
-        //linkList.add(new Link(blocklist.get(1).getPointList().get(2).circle,
-        //        blocklist.get(2).getPointList().get(0).circle,0));
-
-
-
 
 
 
@@ -174,15 +169,17 @@ public class Game {
         stage.setScene(scene);
         stage.show();
     }
-    public Block addBlock(Point2D one, Point2D two, Point2D three, Point2D four, double mass){
+    public Block addBlock(Point2D one, double weight, double height, double mass){
+        Point2D two = new Point2D(one.getX() + weight, one.getY());
+        Point2D three = new Point2D(one.getX() + weight,one.getY() + height);
+        Point2D four = new Point2D(one.getX(), one.getY() + height);
+
         Point onePoint = new Point(new Circle(one.getX(),one.getY(),0));
         Point twoPoint = new Point(new Circle(two.getX(),two.getY(),0));
         Point threePoint = new Point(new Circle(three.getX(),three.getY(),0));
         Point fourPoint = new Point(new Circle(four.getX(),four.getY(),0));
 
 
-        double weight = onePoint.getPos().subtract(twoPoint.getPos()).magnitude();
-        double height = twoPoint.getPos().subtract(threePoint.getPos()).magnitude();
         double diag_value = onePoint.getPos().subtract(threePoint.getPos()).magnitude();
 
         pointList.add(onePoint);

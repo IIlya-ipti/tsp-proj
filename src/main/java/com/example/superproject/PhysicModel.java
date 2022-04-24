@@ -5,6 +5,7 @@ import javafx.geometry.Point2D;
 import java.util.List;
 
 public class PhysicModel {
+    static final double g = 9.8;
     final double  mass;
     final double inertia;
     public final double restitution = 0.0;
