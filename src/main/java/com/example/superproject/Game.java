@@ -29,7 +29,6 @@ public class Game {
     private final List<Link> linkList = new ArrayList<>();
     private final List<Point> pointList = new ArrayList<>();
     private final List<Block> blocklist = new ArrayList<>();
-    private final List<Manifold> manifoldList = new ArrayList<>();
     final private List<Shape> shapes = new ArrayList<>();
     private final Group group = new Group();
     boolean DEBUG = false;
@@ -67,6 +66,7 @@ public class Game {
         //        0
         //);
 
+        System.out.println(rightleg.getNormals());
 
         //platform.setGravity(false);
         linkList.add(new Link(
@@ -104,9 +104,13 @@ public class Game {
                 if(!DEBUG) {
 
                     for (int j = 0; j < 2; j++) {
-                        for (int i = 0; i < 10; i++) {
-                            for (Link link : linkList) {
-                                link.solve();
+                        for(int k1 = 0;k1 < blocklist.size();k1++){
+                            for(int k2 = 0; k2 < blocklist.size();k2++){
+                                if(k2 == k1) continue;
+                                if(Utility_Functions.IntersectsPoints(blocklist.get(k1),blocklist.get(k2)).size() > 0) {
+                                    manifold.setBlocks(blocklist.get(k1), blocklist.get(k2));
+                                    manifold.solveCollision();
+                                }
                             }
                         }
                         for (Point point : pointList) {
@@ -132,17 +136,11 @@ public class Game {
             String msg =
                     "x: " +event.getX()      + ", y: "       + event.getY()        ;
             text.setText(msg);
+            MouseX = event.getX();
+            MouseY = event.getY();
         });
         group.getChildren().add(text);
 
-
-        // Mose event
-        scene.setOnMouseMoved(mouseEvent -> {
-
-                MouseX = mouseEvent.getX();
-                MouseY = mouseEvent.getY();
-
-        });
 
         // EVENT KEY
         scene.setOnKeyPressed(keyEvent -> {

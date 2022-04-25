@@ -4,7 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.shape.Circle;
 
 public class Point {
-    Point2D acc = new Point2D(0,9.8);
+    Point2D acc = new Point2D(0,PhysicModel.g);
     Point2D pos;
     private Point2D old_pos;
     private Point2D new_pos;

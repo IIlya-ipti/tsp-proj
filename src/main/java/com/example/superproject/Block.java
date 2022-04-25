@@ -2,6 +2,7 @@ package com.example.superproject;
 
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,20 +48,21 @@ public class Block {
     List<Point2D> getNormals(){
         getPoints();
         Point2D vec;
-        for(int i = 0;i < point2DS.size() - 1;i++){
-            vec = point2DS.get(i + 1).subtract(point2DS.get(i));
+        for(int i = 0;i < point2DS.size();i++){
+            vec = point2DS.get((i + 1)%4).subtract(point2DS.get(i));
             vec = new Point2D(vec.getY()*-1, vec.getX());
             vec = vec.normalize();
             vec = vec.multiply(-1);
             normals.set(i,vec);
         }
-        vec = point2DS.get(0).subtract(point2DS.get(point2DS.size() - 1));
-        vec = new Point2D(vec.getY()*-1, vec.getX());
-        vec = vec.normalize();
-        vec = vec.multiply(-1);
-        normals.set(point2DS.size() - 1,vec);
         return normals;
     }
+
+    Pair<Point2D,Point2D> getSize(int index){
+        List<Point2D> point2DS = getPoints();
+        return new Pair<>(point2DS.get((index + 1) % 4),point2DS.get(index % 4));
+    }
+
     /*
     * Move one point to point2D
     * */

@@ -43,6 +43,8 @@ public class Manifold {
         // TODO: watch here!
         //A.physics_model.contacts = contacts;
 
+
+
         Triple<Double,Point2D,Short> length_and_normal1 = FindAxisLeastPenetration(A,B);
         Triple<Double,Point2D,Short> length_and_normal2 = FindAxisLeastPenetration(B,A);
 
@@ -51,18 +53,26 @@ public class Manifold {
             normal = length_and_normal1.getTwo();
             displacement = length_and_normal1.getOne();
 
+            // ADD UPDATE
+            contactSide = A.getSize(length_and_normal1.getThree());
+
         }
         else {
             normal = length_and_normal2.getTwo();
             displacement = length_and_normal2.getOne();
             normal = normal.multiply(-1);
 
+            // ADD UPDATE
+            contactSide = B.getSize(length_and_normal2.getThree());
+
         }
         displacement = -displacement;
     }
 
+
+
     /*
-     * Get os of Inersaption
+     * Get os of Intersection
      * */
     Triple<Double,Point2D,Short> FindAxisLeastPenetration(Block blockA, Block blockB){
         List<Point2D> normals = blockA.getNormals();
@@ -191,5 +201,6 @@ public class Manifold {
     private double df;
     public Point2D normal;           // From A to B
     public List<Point> contacts;
+    public Pair<Point2D,Point2D> contactSide;
     public double displacement;     // Depth of collision
 }
