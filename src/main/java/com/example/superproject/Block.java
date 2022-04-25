@@ -58,9 +58,12 @@ public class Block {
         return normals;
     }
 
-    Pair<Point2D,Point2D> getSize(int index){
+    Pair<Point2D,Point2D> getSide(int index){
         List<Point2D> point2DS = getPoints();
         return new Pair<>(point2DS.get((index + 1) % 4),point2DS.get(index % 4));
+    }
+    int getIndexPoint(Point point){
+        return pointList.indexOf(point);
     }
 
     /*

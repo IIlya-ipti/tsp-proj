@@ -54,7 +54,7 @@ public class Manifold {
             displacement = length_and_normal1.getOne();
 
             // ADD UPDATE
-            contactSide = A.getSize(length_and_normal1.getThree());
+            contactSide = getSide(contacts.get(0),normal);
 
         }
         else {
@@ -63,12 +63,48 @@ public class Manifold {
             normal = normal.multiply(-1);
 
             // ADD UPDATE
-            contactSide = B.getSize(length_and_normal2.getThree());
+            contactSide = getSide(contacts.get(0),normal);
 
         }
+        System.out.println(".");
+        System.out.print(contactSide.getValue().getPos());
+        System.out.println(contactSide.getKey().getPos());
+        System.out.println(normal);
         displacement = -displacement;
     }
 
+    /*
+    * get side of contact
+    * */
+    private Pair<Point,Point> getSide(Point contact,Point2D normal){
+        if(A.hasPoint(contact)){
+            return getSideBlock(A,contact,normal);
+        }
+        return getSideBlock(B,contact,normal);
+    }
+
+    /*
+    * get contact size of block
+    * */
+    private Pair<Point,Point> getSideBlock(Block block, Point contact, Point2D normal){
+        int index = block.getIndexPoint(contact);
+        if (index == -1){
+            return null;
+        }
+        System.out.println((4 + index + 1) % 4);
+        System.out.println((4 + index - 1) % 4);
+        Point a = block.getPointList().get((4 + index + 1) % 4);
+        Point b = block.getPointList().get((4 + index - 1) % 4);
+
+        Point2D ca = a.getPos().subtract(contact.getPos()).normalize();
+        Point2D cb = b.getPos().subtract(contact.getPos()).normalize();
+
+        if (Math.abs(ca.dotProduct(normal)) < Math.abs(cb.dotProduct(normal))) {
+            return new Pair<>(contact, a);
+        } else {
+            return new Pair<>(contact, b);
+        }
+    }
 
 
     /*
@@ -201,6 +237,6 @@ public class Manifold {
     private double df;
     public Point2D normal;           // From A to B
     public List<Point> contacts;
-    public Pair<Point2D,Point2D> contactSide;
+    public Pair<Point, Point> contactSide;
     public double displacement;     // Depth of collision
 }
