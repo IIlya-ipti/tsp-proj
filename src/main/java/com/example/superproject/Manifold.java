@@ -1,6 +1,5 @@
 package com.example.superproject;
 
-
 import javafx.geometry.Point2D;
 import javafx.util.Pair;
 
@@ -13,22 +12,11 @@ public class Manifold {
     public boolean isCollide = true;
 
     public Manifold(){}
-    public Manifold(Block A, Block B){
-        this.A = A;
-        this.B = B;
-        //isCollide = !A.bindBlocks.contains(B);
-
-
-        sf = Math.sqrt(A.physics_model.sFriction * A.physics_model.sFriction + B.physics_model.sFriction * B.physics_model.sFriction);
-        df = Math.sqrt(A.physics_model.dFriction * A.physics_model.dFriction + B.physics_model.dFriction * B.physics_model.dFriction);
-        e = Math.min(A.physics_model.restitution, B.physics_model.restitution);
-    }
 
     public void setBlocks(Block A, Block B){
         this.A = A;
         this.B = B;
-        //isCollide = !A.bindBlocks.contains(B);
-
+        isCollide = !A.bindBlocks.contains(B);
 
         sf = Math.sqrt(A.physics_model.sFriction * A.physics_model.sFriction + B.physics_model.sFriction * B.physics_model.sFriction);
         df = Math.sqrt(A.physics_model.dFriction * A.physics_model.dFriction + B.physics_model.dFriction * B.physics_model.dFriction);
@@ -40,11 +28,6 @@ public class Manifold {
         displacement = 0;
         contacts = Utility_Functions.IntersectsPoints(A, B);
 
-        // TODO: watch here!
-        //A.physics_model.contacts = contacts;
-
-
-
         Triple<Double,Point2D,Short> length_and_normal1 = FindAxisLeastPenetration(A,B);
         Triple<Double,Point2D,Short> length_and_normal2 = FindAxisLeastPenetration(B,A);
 
@@ -53,25 +36,19 @@ public class Manifold {
             normal = length_and_normal1.getTwo();
             displacement = length_and_normal1.getOne();
 
-            // ADD UPDATE
-            contactSide = getSide(contacts.get(0),normal);
-
         }
         else {
             normal = length_and_normal2.getTwo();
             displacement = length_and_normal2.getOne();
             normal = normal.multiply(-1);
 
-            // ADD UPDATE
-            contactSide = getSide(contacts.get(0),normal);
-
         }
         displacement = -displacement;
     }
 
     /*
-    * get the deepest point for block of normal
-    * */
+     * get the deepest point for block of normal
+     * */
     private Point getDepthPoint(List<Point> points,Point2D normal,Block block){
         double min_val = Double.NaN;
         double val;
@@ -89,8 +66,8 @@ public class Manifold {
     }
 
     /*
-    * get the deepest point of normal
-    * */
+     * get the deepest point of normal
+     * */
     private Point getDepthPoint(List<Point> points,Point2D normal){
         double min_val = points.get(0).getPos().dotProduct(normal);
         double val;
@@ -106,8 +83,8 @@ public class Manifold {
     }
 
     /*
-    * get side of contact
-    * */
+     * get side of contact
+     * */
     private Pair<Point,Point> getSide(Point contact,Point2D normal){
         if(A.hasPoint(contact)){
             return getSideBlock(A,contact,normal);
@@ -116,12 +93,13 @@ public class Manifold {
     }
 
     /*
-    * get contact size of block
-    * */
+     * get contact size of block
+     * */
     private Pair<Point,Point> getSideBlock(Block block, Point contact, Point2D normal){
         int index = block.getIndexPoint(contact);
         if (index == -1){
-            return null;
+            int index2 = block.getIndexOfAllPoints(contact);
+            return block.getSide(index2/block.pointsInSize);
         }
 
         Point a = block.getPointList().get((4 + index + 1) % 4);
@@ -193,7 +171,9 @@ public class Manifold {
         return BestPoint;
     }
 
-    // TODO: Исправить эту функцию
+
+
+    @Deprecated
     public void applyImpulse(){  // solve impulse
         // We need coordinates of center mass
         Point2D centerA = A.centerBlock();
@@ -201,7 +181,7 @@ public class Manifold {
 
         for (Point contact_point : contacts){
             Point2D contact = new Point2D(contact_point.circle.getCenterX(),
-            contact_point.circle.getCenterY());
+                    contact_point.circle.getCenterY());
 
 
             Point2D RA = contact.subtract(centerA);
@@ -253,7 +233,42 @@ public class Manifold {
     }
 
     public void posCorr()  {
-        B.MoveTo(B.getXY().add(normal.multiply(displacement)));
+
+        Point2D collisionVector = normal.multiply(displacement);
+
+        if (!B.isPowers){
+            return;
+        }
+
+        boolean[] flags = {false, false, false, false};
+
+        for (Point contact : contacts){
+
+            if (!B.hasPoint(contact)) {
+                continue;
+            }
+
+            contactSide = getSide(contact, normal);
+            Point2D E1 = contactSide.getKey().getPos();
+            Point2D E2 = contactSide.getValue().getPos();
+
+            double t;
+            if (Math.abs(E1.getX() - E2.getX()) >
+                    Math.abs(E1.getY() - E2.getY())){
+                t = (contact.getPos().getX() - collisionVector.getX() - E1.getX()) / (E2.getX() - E1.getX());
+            }
+            else{
+                t = (contact.getPos().getY() - collisionVector.getY() - E1.getY()) / (E2.getY() - E1.getY());
+            }
+
+            double lambda = 1.0 / (t*t + (1-t)*(1-t)) ;
+
+
+            contactSide.getKey().setPos(contactSide.getKey().getPos().add(collisionVector.multiply((1 - t) * 0.5 * lambda)));
+            contactSide.getValue().setPos(contactSide.getValue().getPos().add(collisionVector.multiply(t * 0.5 * lambda)));
+
+
+        }
     }
 
     private Point2D getResultSpeed(final Point2D RA, final Point2D RB){

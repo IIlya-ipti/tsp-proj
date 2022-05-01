@@ -4,7 +4,11 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseButton;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -26,59 +30,80 @@ enum SHAPES{
 public class Game {
     private double MouseX = 0;
     private double MouseY = 0;
-    private final List<Link> linkList = new ArrayList<>();
+    public final List<Link> linkList = new ArrayList<>();
     private final List<Point> pointList = new ArrayList<>();
     private final List<Block> blocklist = new ArrayList<>();
     final private List<Shape> shapes = new ArrayList<>();
+    public final List<Stool> stoolList = new ArrayList<>();
     private final Group group = new Group();
     boolean DEBUG = false;
     boolean mouse = true;
+    private final double MAX_TIME = 30;
+    public Block bl;
 
     static final double SCENE_X = 800;
     static final double SCENE_Y = 700;
 
 
+    public void setStool(Stool stool){
+        stoolList.add(stool);
+    }
+    public List<Double> TrainRun(){
+        Manifold manifold = new Manifold();
+        final double dt = 2 * 1./50;
+        double t = 0;
+
+        while(t  < MAX_TIME) {
+            Utility_Functions.sortOSX(blocklist);
+            Utility_Functions.sortOSY(blocklist);
+
+            for (int j = 0; j < 1; j++) {
+                t += dt;
+
+                for (Point point : pointList) {
+                    point.run(dt) ;
+                }
+                for(Stool stool : stoolList){
+                    stool.run(t);
+                }
+                for (int i = 0; i < 5; i++) {
+                    makeCollision(manifold);
+                }
+                makeLink();
+
+                for (Block block : blocklist) {
+                    block.update();
+                }
+            }
+        }
+        List<Double> DistList = new ArrayList<>();
+        for (Stool stool : stoolList) {
+            DistList.add(stool.getDist());
+        }
+        return DistList;
+    }
     public void initObjects(){
-        Block leftneg = addBlock(
-                new Point2D(150,100),
-                50,
-                200,
-                50
-        );
 
-        Block body = addBlock(
-                new Point2D(150,0),
-                300,
+        Block platform = addBlock(
+                new Point2D(-500,600),
+                5000,
                 100,
-                50
+                1000000,
+                Color.GREEN
         );
-        Block rightleg = addBlock(
-                new Point2D(400,100),
-                50,
-                200,
-                50
-       );
+        platform.setGravity(false);
+        platform.switchPowers();
 
-        //Block platform = addBlock(
-        //        new Point2D(0,600),
-        //        1000,
-        //        100,
-        //        0
-        //);
+        //stoolList.add(new Stool(new Point2D(150,360),300,50,50,200,this,Color.AQUAMARINE));
+        //stoolList.add(new Stool(new Point2D(150,360),300,50,50,200,this,Color.GREEN));
 
-        System.out.println(rightleg.getNormals());
+        //stoolList.get(0).setParameters(0.08);
+        //stoolList.get(1).setParameters(0.6);
 
-        //platform.setGravity(false);
-        linkList.add(new Link(
-                leftneg.getPointList().get(0).circle,
-                body.getPointList().get(3).circle,
-                0
-        ));
-        linkList.add(new Link(
-                body.getPointList().get(2).circle,
-                rightleg.getPointList().get(1).circle,
-                0
-        ));
+        Utility_Functions.bindStools(stoolList);
+
+        //addBlock(new Point2D(20, 20), 100, 100, 50, Color.AQUAMARINE);
+
 
 
 
@@ -90,38 +115,74 @@ public class Game {
         shapes.add(text);
     }
 
+
+    private void makeCollision(Manifold manifold){
+
+        for (int k1 = 0; k1 < blocklist.size(); k1++){
+            for (int k2 = 0; k2 < blocklist.size(); k2++){
+                if (k1 == k2){
+                    continue;
+                }
+                if (Utility_Functions.IntersectsPoints(blocklist.get(k1), blocklist.get(k2)).size() > 0){
+                    manifold.setBlocks(blocklist.get(k1), blocklist.get(k2));
+                    if(manifold.isCollide) {
+                        manifold.solveCollision();
+                        manifold.posCorr();
+                    }
+                }
+            }
+        }
+    }
+
+    private void makeLink(){
+        for (int i = 0; i < 5; i++) {
+            for (Link link : linkList) {
+                link.solve();
+            }
+        }
+    }
     public void run(Stage stage){
         Scene scene = new Scene(group,SCENE_X,SCENE_Y);
         Manifold manifold = new Manifold();
+
+
         new AnimationTimer(){
-            final double t = 2 * 1./30;
+            final double dt = 2 * 1./50;
+            private double t = 0;
             @Override
             public void handle(long currentNanoTime) {
                 if(!mouse) {
-                    blocklist.get(1).getPointList().get(0).circle.setCenterX(MouseX);
-                    blocklist.get(1).getPointList().get(0).circle.setCenterY(MouseY);
+                    bl.getPointList().get(0).circle.setCenterX(MouseX);
+                    bl.getPointList().get(0).circle.setCenterY(MouseY);
                 }
+
                 if(!DEBUG) {
 
-                    for (int j = 0; j < 2; j++) {
-                        for(int k1 = 0;k1 < blocklist.size();k1++){
-                            for(int k2 = 0; k2 < blocklist.size();k2++){
-                                if(k2 == k1) continue;
-                                if(Utility_Functions.IntersectsPoints(blocklist.get(k1),blocklist.get(k2)).size() > 0) {
-                                    manifold.setBlocks(blocklist.get(k1), blocklist.get(k2));
-                                    manifold.solveCollision();
-                                }
-                            }
-                        }
+                    Utility_Functions.sortOSX(blocklist);
+                    Utility_Functions.sortOSY(blocklist);
+
+                    for (int j = 0; j < 1; j++) {
+                        t += dt;
+
                         for (Point point : pointList) {
-                            point.run(t / 2);
+                            point.run(dt);
                         }
+                        for(Stool stool : stoolList){
+                            stool.run(t);
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            makeCollision(manifold);
+
+                        }
+                        makeLink();
+
                         for (Block block : blocklist) {
                             block.update();
                         }
                     }
 
                 }
+                System.out.println(t);
             }
         }.start();
 
@@ -141,6 +202,11 @@ public class Game {
         });
         group.getChildren().add(text);
 
+        scene.setOnMouseClicked(event->{
+            if (event.getButton() == MouseButton.PRIMARY){
+                addBlock(new Point2D(event.getX(), event.getY()), 50, 50, 50, Color.AQUAMARINE);
+            }
+        });
 
         // EVENT KEY
         scene.setOnKeyPressed(keyEvent -> {
@@ -158,7 +224,7 @@ public class Game {
                     blocklist.get(0).setVelocityPoint(new Point2D(-10,0),2);
                 }
                 case R->{
-                        mouse = !mouse;
+                    mouse = !mouse;
                 }
             }
         });
@@ -167,15 +233,99 @@ public class Game {
         stage.setScene(scene);
         stage.show();
     }
-    public Block addBlock(Point2D one, double weight, double height, double mass){
+
+    public Block addBlock(Point2D one, double weight, double height, double mass, Paint paint){
+        final double n = 3;
+        final double rad = 2;
+
+
         Point2D two = new Point2D(one.getX() + weight, one.getY());
         Point2D three = new Point2D(one.getX() + weight,one.getY() + height);
         Point2D four = new Point2D(one.getX(), one.getY() + height);
 
-        Point onePoint = new Point(new Circle(one.getX(),one.getY(),0));
-        Point twoPoint = new Point(new Circle(two.getX(),two.getY(),0));
-        Point threePoint = new Point(new Circle(three.getX(),three.getY(),0));
-        Point fourPoint = new Point(new Circle(four.getX(),four.getY(),0));
+
+
+
+        Point onePoint = new Point(new Circle(one.getX(),one.getY(),rad));
+        Point twoPoint = new Point(new Circle(two.getX(),two.getY(),rad));
+        Point threePoint = new Point(new Circle(three.getX(),three.getY(),rad));
+        Point fourPoint = new Point(new Circle(four.getX(),four.getY(),rad));
+
+        Block newBlock = new Block(onePoint,twoPoint,threePoint,fourPoint,mass, (int) n);
+        newBlock.getAllPointList().add(onePoint);
+        newBlock.getAllPointList().add(twoPoint);
+        newBlock.getAllPointList().add(threePoint);
+        newBlock.getAllPointList().add(fourPoint);
+
+        // up
+        Point point,point1;
+        Point2D pointk;
+        point = onePoint;
+
+        for(int i =1; i <= n;i++) {
+            if(i == n){
+                point1 = twoPoint;
+            }else {
+                pointk = new Point2D(one.getX() + i * weight / n, two.getY());
+                point1 = new Point(new Circle(pointk.getX(), pointk.getY(), rad));
+                pointList.add(point1);
+                newBlock.getAllPointList().add(point1);
+            }
+            linkList.add(new Link(point1.circle, point.circle, weight / n));
+            point = point1;
+        }
+
+        // right
+        point = twoPoint;
+
+        for(int i =1; i <= n;i++) {
+            if(i == n){
+                point1 = threePoint;
+            }else {
+                pointk = new Point2D(two.getX(), two.getY() + i * height / n);
+                point1 = new Point(new Circle(pointk.getX(), pointk.getY(), rad));
+                pointList.add(point1);
+                newBlock.getAllPointList().add(point1);
+            }
+            linkList.add(new Link(point1.circle, point.circle, height / n));
+            point = point1;
+        }
+
+        // down
+        point = threePoint;
+
+        for(int i =1; i <= n;i++) {
+            if(i == n){
+                point1 = fourPoint;
+            }else {
+                pointk = new Point2D(three.getX() - i * weight/n, three.getY());
+                point1 = new Point(new Circle(pointk.getX(), pointk.getY(), rad));
+                pointList.add(point1);
+                newBlock.getAllPointList().add(point1);
+            }
+            linkList.add(new Link(point1.circle, point.circle, weight / n));
+            point = point1;
+        }
+
+        // left
+        point = fourPoint;
+
+        for(int i =1; i <= n;i++) {
+            if(i == n){
+                point1 = onePoint;
+            }else {
+                pointk = new Point2D(four.getX() , four.getY() - i * height/n);
+                point1 = new Point(new Circle(pointk.getX(), pointk.getY(), rad));
+                pointList.add(point1);
+                newBlock.getAllPointList().add(point1);
+            }
+            linkList.add(new Link(point1.circle, point.circle, height / n));
+            point = point1;
+        }
+
+
+
+
 
 
         double diag_value = onePoint.getPos().subtract(threePoint.getPos()).magnitude();
@@ -191,7 +341,6 @@ public class Game {
         Link left = new Link(fourPoint.circle, onePoint.circle,height);
         Link diagLeft = new Link(twoPoint.circle,fourPoint.circle,diag_value);
 
-        Block newBlock = new Block(onePoint,twoPoint,threePoint,fourPoint,mass);
 
         blocklist.add(newBlock);
         linkList.add(up);
@@ -200,6 +349,7 @@ public class Game {
         linkList.add(left);
         linkList.add(diagLeft);
 
+        newBlock.getPolygon().setFill(paint);
         group.getChildren().add(newBlock.getPolygon());
 
         return newBlock;

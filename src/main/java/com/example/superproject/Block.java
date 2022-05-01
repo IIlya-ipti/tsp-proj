@@ -4,17 +4,21 @@ import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
 import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
 
 public class Block {
     public final PhysicModel physics_model;
-    private final List<Point> pointList = new ArrayList<>();
+    private final List<Point> pointList = new ArrayList<>(); // angular points
+    private final List<Point> allPoints = new ArrayList<>(); // all points
+    public final Set<Block> bindBlocks = new HashSet<>();
+    public final double weight;
+    public final double height;
+    public final int pointsInSize;
 
     /*
-    * not use!
-    * */
+     * not use!
+     * */
     private final List<Double> doublePointList = new ArrayList<>();
     private final List<Point2D> point2DS = new ArrayList<>();
 
@@ -22,8 +26,14 @@ public class Block {
     private final List<Point2D> normals = new ArrayList<>();
     private final Polygon polygon = new Polygon();
 
+    public boolean isPowers = true;
 
-    Block(Point one, Point two, Point three, Point four, double mass){
+
+    Block(Point one, Point two, Point three, Point four, double mass,int n){
+        weight = Math.abs(two.circle.getCenterX() - one.circle.getCenterX());
+        height = Math.abs(three.circle.getCenterY() - one.circle.getCenterY());
+
+        pointsInSize = n;
         pointList.add(one);
         pointList.add(two);
         pointList.add(three);
@@ -58,18 +68,32 @@ public class Block {
         return normals;
     }
 
-    Pair<Point2D,Point2D> getSide(int index){
-        List<Point2D> point2DS = getPoints();
-        return new Pair<>(point2DS.get((index + 1) % 4),point2DS.get(index % 4));
+    List<Point> getAllPointList(){
+        return allPoints;
+    }
+    Pair<Point,Point> getSide(int index){
+        return new Pair<>(pointList.get((index + 1) % 4),pointList.get(index % 4));
     }
     int getIndexPoint(Point point){
         return pointList.indexOf(point);
     }
+    int getIndexOfAllPoints(Point point){
+        return allPoints.indexOf(point);
+    }
 
     /*
-    * Move one point to point2D
-    * */
+     * Move one point to point2D
+     * */
+
+    public void switchPowers(){
+        isPowers = !isPowers;
+    }
+
     void MoveTo(Point2D point2D){
+        if (!isPowers){
+            return;
+        }
+
         Point2D start = getXY();
         Point2D vec = point2D.subtract(start);
         for(Point point: pointList){
@@ -79,24 +103,29 @@ public class Block {
     }
     void setGravity(boolean gravity){
         if(gravity){
-            for (Point point:pointList){
+            for (Point point:allPoints){
                 point.acc = new Point2D(0,PhysicModel.g);
             }
         }else{
-            for (Point point:pointList){
+            for (Point point:allPoints){
                 point.acc = new Point2D(0,0);
             }
         }
     }
     boolean hasPoint(Point point){
-        for (Point point1 : pointList){
+        for (Point point1 : allPoints){
             if(point == point1){
                 return true;
             }
         }
         return false;
     }
+
+
     void setVelocityPoint(Point2D velocity,int index){
+        if (!isPowers){
+            return;
+        }
         pointList.get(index).setVelocity(velocity);
     }
     Point2D getXY(){
